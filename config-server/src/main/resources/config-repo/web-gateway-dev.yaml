@@ -6,6 +6,7 @@ feign:
     product-service: http://localhost:8081/api/products
     order-service: http://localhost:8082/api/orders
     auth-service: http://localhost:8083/api/auth
+    notification-service: http://localhost:8083/api/auth
 
 resilience4j:
   circuitbreaker:
