@@ -1,0 +1,30 @@
+feign:
+  compression:
+    request:
+      enabled: true
+  client:
+    product-service: http://localhost:8081/api/products
+
+jwt:
+  secret: 4n8RzPq7LmX2vHs9KdF5aBc8NeY6UwTgJrM1xCvZpQwEsA7yBnD3fGhJkL9mNoP2
+  expiration: 86400000 # 24 hours in milliseconds
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+
+  retry:
+    configs:
+      default:
+        max-attempts: 2
+        wait-duration: 2s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2

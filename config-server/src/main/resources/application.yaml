@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: config-server
+
+  profiles:
+    active: ${SERVICE_PROFILE:dev}
+    include: native
+
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config-repo
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+    health:
+      show-details: always
+      circuitbreakers:
+        enabled: true
+
+  tracing:
+    enabled: false
+    sampling:
+      probability: 1.0
+
