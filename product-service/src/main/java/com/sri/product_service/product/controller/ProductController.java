@@ -1,8 +1,8 @@
 package com.sri.product_service.product.controller;
 
 import com.sri.product_service.common.response.Response;
-import com.sri.product_service.common.response.ResponseBuilder;
 import com.sri.product_service.product.dto.request.CreateProductRequest;
+import com.sri.product_service.product.dto.request.DecrementStockRequest;
 import com.sri.product_service.product.dto.response.ProductResponse;
 import com.sri.product_service.product.service.ProductService;
 import jakarta.validation.Valid;
@@ -24,14 +24,18 @@ public class ProductController {
     public ResponseEntity<Response<ProductResponse>> create(
             @Valid @RequestBody CreateProductRequest request) {
 
-        return ResponseBuilder.success(service.create(request), HttpStatus.CREATED);
+        Response<ProductResponse> response = Response.created();
+        response.setPayload(service.create(request));
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Response<ProductResponse>> getProductById(
             @PathVariable("id") Long id) {
 
-        return ResponseBuilder.success(service.getById(id));
+        Response<ProductResponse> response = Response.ok();
+        response.setPayload(service.getById(id));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping
@@ -44,11 +48,35 @@ public class ProductController {
         System.out.println(email);
         System.out.println(role);
 
-        return ResponseBuilder.success(service.getAll());
+        Response<List<ProductResponse>> response = Response.ok();
+        response.setPayload(service.getAll());
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/test")
     public ResponseEntity<Response<String>> test() {
-        return ResponseBuilder.success("Products");
+        Response<String> response = Response.ok();
+        response.setPayload("Products");
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}/stock/decrement")
+    public ResponseEntity<Response<Void>> decrementStock(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody DecrementStockRequest request) {
+
+        service.decrementStock(id, request.getQuantity());
+        Response<Void> response = Response.ok();
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}/stock/restore")
+    public ResponseEntity<Response<Void>> restoreStock(
+            @PathVariable("id") Long id,
+            @Valid @RequestBody DecrementStockRequest request) {
+
+        service.restoreStock(id, request.getQuantity());
+        Response<Void> response = Response.ok();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

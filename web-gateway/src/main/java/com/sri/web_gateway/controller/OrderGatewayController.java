@@ -1,7 +1,6 @@
 package com.sri.web_gateway.controller;
 
 import com.sri.web_gateway.common.response.Response;
-import com.sri.web_gateway.common.response.ResponseBuilder;
 import com.sri.web_gateway.integration.order.client.OrderClient;
 import com.sri.web_gateway.integration.order.dto.CreateOrderRequest;
 import com.sri.web_gateway.integration.order.dto.OrderResponse;
@@ -22,22 +21,29 @@ public class OrderGatewayController {
 
     @PostMapping
     public ResponseEntity<Response<OrderResponse>> createOrder(@Valid @RequestBody CreateOrderRequest request) {
-        return ResponseBuilder.success(orderClient.createOrder(request), HttpStatus.CREATED);
+        Response<OrderResponse> response = Response.created();
+        response.setPayload(orderClient.createOrder(request));
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Response<OrderResponse>> getOrderById(@PathVariable("id") Long id) {
-        return ResponseBuilder.success(orderClient.getOrderById(id));
+        Response<OrderResponse> response = Response.ok();
+        response.setPayload(orderClient.getOrderById(id));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<Response<List<OrderResponse>>> getAllOrders() {
-        return ResponseBuilder.success(orderClient.getAllOrders());
+        Response<List<OrderResponse>> response = Response.ok();
+        response.setPayload(orderClient.getAllOrders());
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Response<Void>> deleteOrder(@PathVariable("id") Long id) {
         orderClient.deleteOrder(id);
-        return ResponseBuilder.success(null);
+        Response<Void> response = Response.ok();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

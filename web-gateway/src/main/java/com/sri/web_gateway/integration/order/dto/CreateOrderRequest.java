@@ -13,4 +13,7 @@ public class CreateOrderRequest {
     @NotNull(message = "Quantity is required")
     @Positive(message = "Quantity must be greater than zero")
     private Integer quantity;
+
+    @NotNull(message = "Payment method is required")
+    private PaymentMethod paymentMethod;
 }

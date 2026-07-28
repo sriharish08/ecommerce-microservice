@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 public class OrderResponse {
 
-    private Long id;
+    private Long orderId;
 
     private Long productId;
 

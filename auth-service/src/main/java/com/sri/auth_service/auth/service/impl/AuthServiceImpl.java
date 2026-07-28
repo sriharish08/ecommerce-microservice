@@ -31,7 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final NotificationProducer notificationProducer;
 
     @Override
-    public AuthResponse register(RegisterRequest request) {
+    public OtpTriggerResponse register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new UserAlreadyExistsException("Email already exists");
@@ -46,34 +46,22 @@ public class AuthServiceImpl implements AuthService {
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
-                .enabled(true) // Later change to false when registration OTP is enabled
+                .enabled(false)
                 .build();
 
         user = userRepository.save(user);
 
-        // Future Flow
-        /*
         OtpIssueResult result = otpService.issueOtp(user, OtpPurpose.REGISTRATION);
 
-        if (!result.reused()) {
-            notificationProducer.sendOtp(
-                    user,
-                    result.otpVerification().getOtp(),
-                    OtpPurpose.REGISTRATION
-            );
-        }
+        log.info("Issued REGISTRATION OTP for userId={}, publishing notification", user.getId());
 
-        return AuthResponse.builder()
-                .message("Registration OTP sent successfully.")
-                .build();
-        */
+        notificationProducer.sendOtp(
+                user,
+                result.otpVerification().getOtp(),
+                OtpPurpose.REGISTRATION
+        );
 
-        String token = jwtService.generateToken(user);
-
-        return AuthResponse.builder()
-                .accessToken(token)
-                .tokenType("Bearer")
-                .build();
+        return buildOtpTriggerResponse(result);
     }
 
     @Override
@@ -122,7 +110,18 @@ public class AuthServiceImpl implements AuthService {
 
         User user = getUserByEmail(request.getEmail());
 
-        otpService.verifyOtp(user, request.getOtp(), OtpPurpose.LOGIN);
+        // A disabled account can only be mid-registration - it has no other way to end up
+        // disabled - so the purpose is inferred from that flag instead of being passed by
+        // the caller, keeping this one endpoint usable for both REGISTRATION and LOGIN OTPs.
+        OtpPurpose purpose = user.isEnabled() ? OtpPurpose.LOGIN : OtpPurpose.REGISTRATION;
+
+        otpService.verifyOtp(user, request.getOtp(), purpose);
+        otpService.invalidateOtp(user, purpose);
+
+        if (purpose == OtpPurpose.REGISTRATION) {
+            user.setEnabled(true);
+            user = userRepository.save(user);
+        }
 
         String token = jwtService.generateToken(user);
 

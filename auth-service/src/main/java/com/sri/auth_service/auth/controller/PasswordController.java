@@ -6,9 +6,9 @@ import com.sri.auth_service.auth.dto.response.OtpTriggerResponse;
 import com.sri.auth_service.auth.dto.response.ResetPasswordResponse;
 import com.sri.auth_service.auth.service.AuthService;
 import com.sri.auth_service.common.response.Response;
-import com.sri.auth_service.common.response.ResponseBuilder;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,13 +26,17 @@ public class PasswordController {
     public ResponseEntity<Response<OtpTriggerResponse>> forgotPassword(
             @Valid @RequestBody ForgotPasswordRequest request) {
 
-        return ResponseBuilder.success(authService.forgotPassword(request));
+        Response<OtpTriggerResponse> response = Response.ok();
+        response.setPayload(authService.forgotPassword(request));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<Response<ResetPasswordResponse>> resetPassword(
             @Valid @RequestBody ResetPasswordRequest request) {
 
-        return ResponseBuilder.success(authService.resetPassword(request));
+        Response<ResetPasswordResponse> response = Response.ok();
+        response.setPayload(authService.resetPassword(request));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

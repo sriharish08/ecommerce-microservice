@@ -3,6 +3,7 @@ package com.sri.web_gateway.integration.order.client;
 import com.sri.web_gateway.exception.ServiceUnavailableException;
 import com.sri.web_gateway.integration.order.dto.CreateOrderRequest;
 import com.sri.web_gateway.integration.order.dto.OrderResponse;
+import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
@@ -72,6 +73,10 @@ public class OrderClient {
     }
 
     private <T> T fail(String serviceId, Throwable exception) {
+
+        if (exception instanceof FeignException.FeignClientException) {
+            throw (FeignException) exception;
+        }
 
         log.error("Order Service call failed. Reason: {}", exception.getMessage());
 

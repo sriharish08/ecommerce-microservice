@@ -1,19 +1,27 @@
 package com.sri.order_service.order.dto.response;
 
 
+import com.sri.order_service.integration.payment.enums.PaymentMethod;
+import com.sri.order_service.integration.payment.enums.PaymentStatus;
 import com.sri.order_service.order.enums.OrderStatus;
-import lombok.Builder;
-import lombok.Data;
-
-
+import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Data
+
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class OrderResponse {
 
-    private Long id;
+    private Long orderId;
+
+    private String orderNumber;
+
+    private Long userId;
 
     private Long productId;
 
@@ -25,9 +33,15 @@ public class OrderResponse {
 
     private BigDecimal totalAmount;
 
+    private Long paymentId;
+
+    private String transactionId;
+
+    private PaymentStatus paymentStatus;
+
+    private PaymentMethod paymentMethod;
+
     private OrderStatus orderStatus;
 
     private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
 }

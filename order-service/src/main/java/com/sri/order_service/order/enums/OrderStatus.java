@@ -3,9 +3,14 @@ package com.sri.order_service.order.enums;
 
 public enum OrderStatus {
 
-    CREATED,
+    PENDING,
     CONFIRMED,
+    PROCESSING,
+    SHIPPED,
+    OUT_FOR_DELIVERY,
+    DELIVERED,
     CANCELLED,
-    DELIVERED
+    RETURNED,
+    FAILED
 
 }

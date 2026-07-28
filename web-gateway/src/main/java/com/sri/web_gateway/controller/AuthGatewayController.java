@@ -1,7 +1,6 @@
 package com.sri.web_gateway.controller;
 
 import com.sri.web_gateway.common.response.Response;
-import com.sri.web_gateway.common.response.ResponseBuilder;
 import com.sri.web_gateway.integration.auth.client.AuthClient;
 import com.sri.web_gateway.integration.auth.dto.AuthResponse;
 import com.sri.web_gateway.integration.auth.dto.ForgotPasswordRequest;
@@ -30,32 +29,44 @@ public class AuthGatewayController {
     private final AuthClient authClient;
 
     @PostMapping("/register")
-    public ResponseEntity<Response<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseBuilder.success(authClient.register(request), HttpStatus.CREATED);
+    public ResponseEntity<Response<OtpTriggerResponse>> register(@Valid @RequestBody RegisterRequest request) {
+        Response<OtpTriggerResponse> response = Response.created();
+        response.setPayload(authClient.register(request));
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
     public ResponseEntity<Response<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseBuilder.success(authClient.login(request));
+        Response<LoginResponse> response = Response.ok();
+        response.setPayload(authClient.login(request));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/otp/verify-otp")
     public ResponseEntity<Response<AuthResponse>> verifyOtp(@Valid @RequestBody OtpVerifyRequest request) {
-        return ResponseBuilder.success(authClient.verifyOtp(request));
+        Response<AuthResponse> response = Response.ok();
+        response.setPayload(authClient.verifyOtp(request));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/otp/trigger-otp")
     public ResponseEntity<Response<OtpTriggerResponse>> triggerOtp(@Valid @RequestBody OtpTriggerRequest request) {
-        return ResponseBuilder.success(authClient.triggerOtp(request));
+        Response<OtpTriggerResponse> response = Response.ok();
+        response.setPayload(authClient.triggerOtp(request));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/password/forgot-password")
     public ResponseEntity<Response<OtpTriggerResponse>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        return ResponseBuilder.success(authClient.forgotPassword(request));
+        Response<OtpTriggerResponse> response = Response.ok();
+        response.setPayload(authClient.forgotPassword(request));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/password/reset-password")
     public ResponseEntity<Response<ResetPasswordResponse>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        return ResponseBuilder.success(authClient.resetPassword(request));
+        Response<ResetPasswordResponse> response = Response.ok();
+        response.setPayload(authClient.resetPassword(request));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

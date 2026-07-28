@@ -3,6 +3,7 @@ package com.sri.web_gateway.integration.product.client;
 import com.sri.web_gateway.exception.ServiceUnavailableException;
 import com.sri.web_gateway.integration.product.dto.CreateProductRequest;
 import com.sri.web_gateway.integration.product.dto.ProductResponse;
+import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +70,10 @@ public class ProductClient {
     }
 
     private <T> T fail(Throwable exception) {
+
+        if (exception instanceof FeignException.FeignClientException) {
+            throw (FeignException) exception;
+        }
 
         log.error("Product Service call failed. Reason: {}", exception.getMessage());
 

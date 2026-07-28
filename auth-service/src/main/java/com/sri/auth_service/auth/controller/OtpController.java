@@ -6,9 +6,9 @@ import com.sri.auth_service.auth.dto.response.AuthResponse;
 import com.sri.auth_service.auth.dto.response.OtpTriggerResponse;
 import com.sri.auth_service.auth.service.AuthService;
 import com.sri.auth_service.common.response.Response;
-import com.sri.auth_service.common.response.ResponseBuilder;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,13 +26,17 @@ public class OtpController {
     public ResponseEntity<Response<AuthResponse>> verifyOtp(
             @Valid @RequestBody OtpVerifyRequest request) {
 
-        return ResponseBuilder.success(authService.verifyOtp(request));
+        Response<AuthResponse> response = Response.ok();
+        response.setPayload(authService.verifyOtp(request));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/trigger-otp")
     public ResponseEntity<Response<OtpTriggerResponse>> triggerOtp(
             @Valid @RequestBody OtpTriggerRequest request) {
 
-        return ResponseBuilder.success(authService.triggerOtp(request));
+        Response<OtpTriggerResponse> response = Response.ok();
+        response.setPayload(authService.triggerOtp(request));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

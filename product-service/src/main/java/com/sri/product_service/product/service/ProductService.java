@@ -14,4 +14,8 @@ public interface ProductService {
 
     List<ProductResponse> getAll();
 
+    void decrementStock(Long id, Integer quantity);
+
+    void restoreStock(Long id, Integer quantity);
+
 }

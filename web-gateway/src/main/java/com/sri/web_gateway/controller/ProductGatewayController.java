@@ -1,7 +1,6 @@
 package com.sri.web_gateway.controller;
 
 import com.sri.web_gateway.common.response.Response;
-import com.sri.web_gateway.common.response.ResponseBuilder;
 import com.sri.web_gateway.integration.product.client.ProductClient;
 import com.sri.web_gateway.integration.product.dto.CreateProductRequest;
 import com.sri.web_gateway.integration.product.dto.ProductResponse;
@@ -22,21 +21,29 @@ public class ProductGatewayController {
 
     @PostMapping
     public ResponseEntity<Response<ProductResponse>> create(@Valid @RequestBody CreateProductRequest request) {
-        return ResponseBuilder.success(productClient.create(request), HttpStatus.CREATED);
+        Response<ProductResponse> response = Response.created();
+        response.setPayload(productClient.create(request));
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Response<ProductResponse>> getProductById(@PathVariable("id") Long id) {
-        return ResponseBuilder.success(productClient.getProductById(id));
+        Response<ProductResponse> response = Response.ok();
+        response.setPayload(productClient.getProductById(id));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping
     public ResponseEntity<Response<List<ProductResponse>>> getProducts() {
-        return ResponseBuilder.success(productClient.getProducts());
+        Response<List<ProductResponse>> response = Response.ok();
+        response.setPayload(productClient.getProducts());
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping("/test")
     public ResponseEntity<Response<String>> test() {
-        return ResponseBuilder.success(productClient.test());
+        Response<String> response = Response.ok();
+        response.setPayload(productClient.test());
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

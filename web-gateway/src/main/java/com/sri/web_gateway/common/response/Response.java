@@ -2,8 +2,16 @@ package com.sri.web_gateway.common.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.http.HttpStatus;
 
+import java.time.LocalDateTime;
+
+@NoArgsConstructor
+@Getter
+@Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Response<T> {
@@ -14,46 +22,63 @@ public class Response<T> {
     private Object metadata;
     private String uuid;
 
-    public Response() {
+    public static <T> Response<T> ok() {
+        return status(HttpStatus.OK);
     }
 
-    public HttpStatus getStatus() {
-        return status;
+    public static <T> Response<T> created() {
+        return status(HttpStatus.CREATED);
     }
 
-    public void setStatus(HttpStatus status) {
-        this.status = status;
+    public static <T> Response<T> badRequest() {
+        return status(HttpStatus.BAD_REQUEST);
     }
 
-    public T getPayload() {
-        return payload;
+    public static <T> Response<T> unauthorized() {
+        return status(HttpStatus.UNAUTHORIZED);
     }
 
-    public void setPayload(T payload) {
-        this.payload = payload;
+    public static <T> Response<T> notFound() {
+        return status(HttpStatus.NOT_FOUND);
     }
 
-    public Object getErrors() {
-        return errors;
+    public static <T> Response<T> conflict() {
+        return status(HttpStatus.CONFLICT);
     }
 
-    public void setErrors(Object errors) {
-        this.errors = errors;
+    public static <T> Response<T> serviceUnavailable() {
+        return status(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
-    public Object getMetadata() {
-        return metadata;
+    public static <T> Response<T> internalServerError() {
+        return status(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    public void setMetadata(Object metadata) {
-        this.metadata = metadata;
+    public static <T> Response<T> methodNotSupported() {
+        return status(HttpStatus.METHOD_NOT_ALLOWED);
     }
 
-    public String getUuid() {
-        return uuid;
+    public static <T> Response<T> status(HttpStatus status) {
+        Response<T> response = new Response<>();
+        response.setStatus(status);
+        return response;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void addErrorMsgToResponse(String errorMsg, Exception ex) {
+        ResponseError error = new ResponseError();
+        error.setMessage(errorMsg);
+        error.setDetails(ex.getMessage());
+        error.setTimestamp(LocalDateTime.now());
+        setErrors(error);
+    }
+
+    @Getter
+    @Setter
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ResponseError {
+        private String message;
+        private String details;
+        private LocalDateTime timestamp;
     }
 }

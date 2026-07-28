@@ -1,7 +1,6 @@
 package com.sri.order_service.order.controller;
 
 import com.sri.order_service.common.response.Response;
-import com.sri.order_service.common.response.ResponseBuilder;
 import com.sri.order_service.order.dto.request.CreateOrderRequest;
 import com.sri.order_service.order.dto.response.OrderResponse;
 import com.sri.order_service.order.service.OrderService;
@@ -22,36 +21,44 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<Response<OrderResponse>> createOrder(
-            @Valid @RequestBody CreateOrderRequest request) {
+            @Valid @RequestBody CreateOrderRequest request,
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Email") String email) {
 
-        OrderResponse response = orderService.createOrder(request);
-
-        return ResponseBuilder.success(response, HttpStatus.CREATED);
+        Response<OrderResponse> response = Response.created();
+        response.setPayload(orderService.createOrder(request, userId, email));
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Response<OrderResponse>> getOrderById(
-            @PathVariable("id") Long id) {
+            @PathVariable("id") Long id,
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String role) {
 
-        OrderResponse response = orderService.getOrderById(id);
-
-        return ResponseBuilder.success(response);
+        Response<OrderResponse> response = Response.ok();
+        response.setPayload(orderService.getOrderById(id, userId, role));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @GetMapping
-    public ResponseEntity<Response<List<OrderResponse>>> getAllOrders() {
+    public ResponseEntity<Response<List<OrderResponse>>> getAllOrders(
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String role) {
 
-        List<OrderResponse> response = orderService.getAllOrders();
-
-        return ResponseBuilder.success(response);
+        Response<List<OrderResponse>> response = Response.ok();
+        response.setPayload(orderService.getAllOrders(userId, role));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Response<Void>> deleteOrder(
-            @PathVariable("id") Long id) {
+            @PathVariable("id") Long id,
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("X-User-Role") String role) {
 
-        orderService.deleteOrder(id);
-
-        return ResponseBuilder.success(null);
+        orderService.deleteOrder(id, userId, role);
+        Response<Void> response = Response.ok();
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

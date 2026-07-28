@@ -11,6 +11,7 @@ import com.sri.web_gateway.integration.auth.dto.OtpVerifyRequest;
 import com.sri.web_gateway.integration.auth.dto.RegisterRequest;
 import com.sri.web_gateway.integration.auth.dto.ResetPasswordRequest;
 import com.sri.web_gateway.integration.auth.dto.ResetPasswordResponse;
+import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -26,18 +27,15 @@ public class AuthClient {
     private final AuthFeignClient authFeignClient;
 
     @CircuitBreaker(name = "authRegister", fallbackMethod = "registerFallback")
-    public AuthResponse register(RegisterRequest request) {
+    public OtpTriggerResponse register(RegisterRequest request) {
 
         log.info("Calling Auth Service to register user email={}", request.getEmail());
 
         return authFeignClient.register(request).getPayload();
     }
 
-    private AuthResponse registerFallback(RegisterRequest request, Throwable exception) {
-
-        log.error("Failed to register user {}. Reason: {}", request.getEmail(), exception.getMessage());
-
-        throw new ServiceUnavailableException("auth-service", "auth-service is temporarily unavailable, please try again later");
+    private OtpTriggerResponse registerFallback(RegisterRequest request, Throwable exception) {
+        return fail(exception);
     }
 
     @CircuitBreaker(name = "authLogin", fallbackMethod = "loginFallback")
@@ -49,10 +47,7 @@ public class AuthClient {
     }
 
     private LoginResponse loginFallback(LoginRequest request, Throwable exception) {
-
-        log.error("Failed to login user {}. Reason: {}", request.getEmail(), exception.getMessage());
-
-        throw new ServiceUnavailableException("auth-service", "auth-service is temporarily unavailable, please try again later");
+        return fail(exception);
     }
 
     @CircuitBreaker(name = "authOtpVerify", fallbackMethod = "verifyOtpFallback")
@@ -64,10 +59,7 @@ public class AuthClient {
     }
 
     private AuthResponse verifyOtpFallback(OtpVerifyRequest request, Throwable exception) {
-
-        log.error("Failed to verify OTP for {}. Reason: {}", request.getEmail(), exception.getMessage());
-
-        throw new ServiceUnavailableException("auth-service", "auth-service is temporarily unavailable, please try again later");
+        return fail(exception);
     }
 
     @CircuitBreaker(name = "authOtpTrigger", fallbackMethod = "triggerOtpFallback")
@@ -79,10 +71,7 @@ public class AuthClient {
     }
 
     private OtpTriggerResponse triggerOtpFallback(OtpTriggerRequest request, Throwable exception) {
-
-        log.error("Failed to trigger OTP for {}. Reason: {}", request.getEmail(), exception.getMessage());
-
-        throw new ServiceUnavailableException("auth-service", "auth-service is temporarily unavailable, please try again later");
+        return fail(exception);
     }
 
     @CircuitBreaker(name = "authForgotPassword", fallbackMethod = "forgotPasswordFallback")
@@ -94,10 +83,7 @@ public class AuthClient {
     }
 
     private OtpTriggerResponse forgotPasswordFallback(ForgotPasswordRequest request, Throwable exception) {
-
-        log.error("Failed to trigger password reset for {}. Reason: {}", request.getEmail(), exception.getMessage());
-
-        throw new ServiceUnavailableException("auth-service", "auth-service is temporarily unavailable, please try again later");
+        return fail(exception);
     }
 
     @CircuitBreaker(name = "authResetPassword", fallbackMethod = "resetPasswordFallback")
@@ -109,8 +95,20 @@ public class AuthClient {
     }
 
     private ResetPasswordResponse resetPasswordFallback(ResetPasswordRequest request, Throwable exception) {
+        return fail(exception);
+    }
 
-        log.error("Failed to reset password for {}. Reason: {}", request.getEmail(), exception.getMessage());
+    /**
+     * A 4xx from auth-service (bad credentials, validation, etc.) is the caller's fault, not a
+     * health signal for auth-service - it's rethrown as-is instead of being masked as 503.
+     */
+    private <T> T fail(Throwable exception) {
+
+        if (exception instanceof FeignException.FeignClientException) {
+            throw (FeignException) exception;
+        }
+
+        log.error("Auth Service call failed. Reason: {}", exception.getMessage());
 
         throw new ServiceUnavailableException("auth-service", "auth-service is temporarily unavailable, please try again later");
     }

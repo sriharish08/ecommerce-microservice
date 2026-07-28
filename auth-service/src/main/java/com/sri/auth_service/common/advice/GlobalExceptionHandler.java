@@ -7,12 +7,15 @@ import com.sri.auth_service.auth.exception.OtpValidationException;
 import com.sri.auth_service.auth.exception.UserAlreadyExistsException;
 import com.sri.auth_service.auth.exception.UserNotFoundException;
 import com.sri.auth_service.common.response.Response;
-import com.sri.auth_service.common.response.ResponseBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,29 +23,61 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<Response<Object>> handleUserNotFound(UserNotFoundException ex) {
-        return ResponseBuilder.error(ex.getMessage(), HttpStatus.NOT_FOUND);
+        logger.error("UserNotFoundException : {}", ex.getMessage());
+        Response<Object> response = Response.notFound();
+        response.addErrorMsgToResponse(ex.getMessage(), ex);
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(InvalidCredentialException.class)
     public ResponseEntity<Response<Object>> handleInvalidCredential(InvalidCredentialException ex) {
-        return ResponseBuilder.error(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+        logger.error("InvalidCredentialException : {}", ex.getMessage());
+        Response<Object> response = Response.unauthorized();
+        response.addErrorMsgToResponse(ex.getMessage(), ex);
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(JwtValidationException.class)
     public ResponseEntity<Response<Object>> handleJwtValidation(JwtValidationException ex) {
-        return ResponseBuilder.error(ex.getMessage(), HttpStatus.UNAUTHORIZED);
+        logger.error("JwtValidationException : {}", ex.getMessage());
+        Response<Object> response = Response.unauthorized();
+        response.addErrorMsgToResponse(ex.getMessage(), ex);
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(UserAlreadyExistsException.class)
     public ResponseEntity<Response<Object>> handleUserAlreadyExists(UserAlreadyExistsException ex) {
-        return ResponseBuilder.error(ex.getMessage(), HttpStatus.CONFLICT);
+        logger.error("UserAlreadyExistsException : {}", ex.getMessage());
+        Response<Object> response = Response.conflict();
+        response.addErrorMsgToResponse(ex.getMessage(), ex);
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(OtpValidationException.class)
     public ResponseEntity<Response<Object>> handleOtpValidation(OtpValidationException ex) {
-        return ResponseBuilder.error(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        logger.error("OtpValidationException : {}", ex.getMessage());
+        Response<Object> response = Response.badRequest();
+        response.addErrorMsgToResponse(ex.getMessage(), ex);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Response<Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        logger.error("DataIntegrityViolationException : {}", ex.getMessage());
+        Response<Object> response = Response.conflict();
+        response.addErrorMsgToResponse("Username or email already exists", ex);
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Response<Object>> handleNoResourceFound(NoResourceFoundException ex) {
+        Response<Object> response = Response.notFound();
+        response.addErrorMsgToResponse("No such endpoint", ex);
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -55,11 +90,17 @@ public class GlobalExceptionHandler {
                 .forEach(error ->
                         errors.put(error.getField(), error.getDefaultMessage()));
 
-        return ResponseBuilder.error(errors, HttpStatus.BAD_REQUEST);
+        logger.error("ValidationException : {}", errors);
+        Response<Object> response = Response.badRequest();
+        response.setErrors(errors);
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Response<Object>> handleException(Exception ex) {
-        return ResponseBuilder.error(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        logger.error("Exception : {}", ex.getMessage(), ex);
+        Response<Object> response = Response.internalServerError();
+        response.addErrorMsgToResponse(ex.getMessage(), ex);
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

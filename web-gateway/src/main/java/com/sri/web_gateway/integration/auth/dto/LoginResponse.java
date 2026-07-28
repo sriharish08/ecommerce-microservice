@@ -8,5 +8,6 @@ import java.time.LocalDateTime;
 public class LoginResponse {
 
     private String message;
+    private boolean otpSent;
     private LocalDateTime otpExpiresAt;
 }

@@ -12,7 +12,7 @@ import com.sri.auth_service.auth.dto.response.OtpTriggerResponse;
 import com.sri.auth_service.auth.dto.response.ResetPasswordResponse;
 
 public interface AuthService {
-    AuthResponse register(RegisterRequest request);
+    OtpTriggerResponse register(RegisterRequest request);
 
     LoginResponse login(LoginRequest request);
 

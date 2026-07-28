@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface AuthFeignClient {
 
     @PostMapping("/register")
-    Response<AuthResponse> register(@RequestBody RegisterRequest request);
+    Response<OtpTriggerResponse> register(@RequestBody RegisterRequest request);
 
     @PostMapping("/login")
     Response<LoginResponse> login(@RequestBody LoginRequest request);
